@@ -32,7 +32,7 @@ async function run() {
       res.json(cars);
     });
 
-    // GET single car
+    // get single car
     app.get("/cars/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: ObjectId(id) };
@@ -40,21 +40,14 @@ async function run() {
       res.json(car);
     });
 
-    // POST API
-    app.post("/cars", async (req, res) => {
-      const car = req.body;
-      const result = await carsCollection.insertOne(car);
-      res.json(result);
-    });
-
-    // GET orders
+    // get orders
     app.get("/orders", async (req, res) => {
       const cursor = ordersCollection.find({});
       const result = await cursor.toArray();
       res.json(result);
     });
 
-    // GET filtered orders
+    // get filtered orders
     app.get("/orders/:email", async (req, res) => {
       const email = req.params.email;
       const query = { email: email };
@@ -63,9 +56,22 @@ async function run() {
       res.json(result);
     });
 
+    // POST API
+    app.post("/cars", async (req, res) => {
+      const car = req.body;
+      const result = await carsCollection.insertOne(car);
+      res.json(result);
+    });
+    // post orders
     app.post("/orders", async (req, res) => {
       const order = req.body;
       const result = await ordersCollection.insertOne(order);
+      res.json(result);
+    });
+
+    app.post("/users", async (req, res) => {
+      const user = req.body;
+      const result = await usersCollection.insertOne(user);
       res.json(result);
     });
 
@@ -81,13 +87,35 @@ async function run() {
           status: updatedData.status,
         },
       };
-
       const result = await ordersCollection.updateOne(
         query,
         updateDoc,
         options
       );
       // console.log('updating user with id', result);
+      res.json(result);
+    });
+
+    // update new users
+    app.put("/users", async (req, res) => {
+      const user = req.body;
+      const filter = { email: user.email };
+      const options = { upsert: true };
+      const updateDoc = { $set: user };
+      const result = await usersCollection.updateOne(
+        filter,
+        updateDoc,
+        options
+      );
+      res.json(result);
+    });
+
+    // make a admin user
+    app.put("/users/admin", async (req, res) => {
+      const user = req.body;
+      const filter = { email: user.email };
+      const updateDoc = { $set: { role: "Admin" } };
+      const result = await usersCollection.updateOne(filter, updateDoc);
       res.json(result);
     });
 
